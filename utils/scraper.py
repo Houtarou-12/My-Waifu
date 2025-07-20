@@ -4,20 +4,26 @@ import feedparser
 import requests
 import re
 
-DATA_FILE = "post_sent.json"
+DATA_FILE = "data.json"
 RSS_URL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCxxnxya_32jcKj4yN1_kD7A"
 
 def load_sent_post_ids():
     try:
         with open(DATA_FILE, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data.get("sent_post_ids", [])
     except:
         return []
 
 def save_sent_post_ids(post_ids):
     try:
+        data = {}
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r") as f:
+                data = json.load(f)
+        data["sent_post_ids"] = post_ids
         with open(DATA_FILE, "w") as f:
-            json.dump(post_ids, f, indent=2)
+            json.dump(data, f, indent=2)
     except Exception as e:
         print(f"[ERROR] Simpan post ID: {e}")
 
@@ -55,20 +61,20 @@ def get_latest_posts(channel_url, max_posts=5):
                         timestamp = post_data.get("publishedTimeText", {}).get("runs", [{}])[0].get("text", "")
                         thumbnail_url = None
 
-                        try:
-                            thumbs = post_data.get("backstageAttachment", {}).get("imageAttachmentRenderer", {}).get("image", {}).get("thumbnails", [])
-                            if thumbs:
-                                thumbnail_url = thumbs[-1].get("url")
-                        except:
-                            pass
-
-                        if not thumbnail_url:
+                        for source in ["imageAttachmentRenderer", "videoAttachmentRenderer"]:
                             try:
-                                thumbs = post_data.get("backstageAttachment", {}).get("videoAttachmentRenderer", {}).get("thumbnail", {}).get("thumbnails", [])
-                                if thumbs:
-                                    thumbnail_url = thumbs[-1].get("url")
+                                thumbs = post_data.get("backstageAttachment", {}).get(source, {}) \
+                                    .get("image" if source == "imageAttachmentRenderer" else "thumbnail", {}) \
+                                    .get("thumbnails", [])
+                                for thumb in reversed(thumbs):
+                                    url = thumb.get("url")
+                                    if url and any(ext in url for ext in [".jpg", ".png", ".webp"]):
+                                        thumbnail_url = url
+                                        break
+                                if thumbnail_url:
+                                    break
                             except:
-                                pass
+                                continue
 
                         results.append({
                             "id": post_id,
