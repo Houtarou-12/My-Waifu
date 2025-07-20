@@ -16,10 +16,11 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 VIDEO_CHANNEL_ID = int(os.getenv("VIDEO_CHANNEL_ID", "0"))
 YT_CHANNEL_URL = os.getenv("YT_COMMUNITY_URL", "https://www.youtube.com/@MuseIndonesia")
+FALLBACK_THUMBNAIL = "https://i.imgur.com/xlRZ7gH.jpg"  # Gambar default jika thumbnail tidak valid
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="w/", intents=intents)
+bot = commands.Bot(command_prefix="~", intents=intents)
 
 @tasks.loop(seconds=60)
 async def check_community():
@@ -34,10 +35,9 @@ async def check_community():
                 url=post["url"],
                 color=discord.Color.blue()
             )
-            embed.set_footer(text="Notifikasi komunitas oleh My Waifu🥰")
+            embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan 🥰")
 
-            if post.get("thumbnail"):
-                embed.set_image(url=post["thumbnail"])
+            embed.set_image(url=post["thumbnail"] or FALLBACK_THUMBNAIL)
 
             if channel:
                 await channel.send(embed=embed)
@@ -59,7 +59,7 @@ async def check_video():
         )
         embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
         embed.set_image(url=f"https://img.youtube.com/vi/{video['id']}/hqdefault.jpg")
-        embed.set_footer(text="Notifikasi video oleh My Waifu🥰")
+        embed.set_footer(text="Notifikasi video oleh Waifu-chan ❤️")
 
         if channel:
             await channel.send(embed=embed)
@@ -79,10 +79,9 @@ async def cekpost(ctx):
         url=post["url"],
         color=discord.Color.green()
     )
-    embed.set_footer(text="Notifikasi oleh My Waifu🥰")
+    embed.set_footer(text="Manual oleh Waifu-chan 😇")
 
-    if post.get("thumbnail"):
-        embed.set_image(url=post["thumbnail"])
+    embed.set_image(url=post["thumbnail"] or FALLBACK_THUMBNAIL)
 
     await ctx.send(embed=embed)
 
