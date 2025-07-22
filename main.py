@@ -68,8 +68,10 @@ async def check_community():
 
             if channel:
                 await channel.send(embed=embed)
-
             sent_post_ids.append(post["id"])
+
+    save_sent_post_ids(sent_post_ids)
+
 
 # 🔁 Loop Video Otomatis (RSS)
 @tasks.loop(seconds=60)
