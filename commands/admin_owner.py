@@ -2,6 +2,9 @@ from discord.ext import commands
 from discord import ui, ButtonStyle
 import discord
 import asyncio
+from discord import TextStyle
+import os
+FORWARD_CHANNEL_ID = int(os.getenv("FORWARD_CHANNEL_ID", "0"))
 
 def setup_admin_owner_commands(bot, COMMUNITY_CHANNEL_ID, VIDEO_CHANNEL_ID, YT_CHANNEL_URL, sent_post_ids):
 
@@ -56,3 +59,49 @@ def setup_admin_owner_commands(bot, COMMUNITY_CHANNEL_ID, VIDEO_CHANNEL_ID, YT_C
         if keyword:
             msg_text += f" yang mengandung kata: `{keyword}`"
         await ctx.send(msg_text, view=ConfirmClearView())
+
+    @bot.command(name="forward")
+    @commands.has_permissions(administrator=True)
+    async def forward(ctx, *, isi: str = None):
+        if not isi or isi.strip() == "":
+            await ctx.send("❌ Format: `~forward <isi pesan>`")
+            return
+
+        embed = discord.Embed(
+            title="📢 Pesan dari Admin",
+            description=isi.strip(),
+            color=discord.Color.gold()
+        )
+        embed.set_footer(text=f"Disampaikan oleh {ctx.author.display_name}")
+
+        class BalasanModal(ui.Modal, title="Kirim Balasan"):
+            respon = ui.TextInput(label="Isi Balasan", style=TextStyle.paragraph, required=True)
+ 
+            async def on_submit(self, interaction: discord.Interaction):
+                embed_reply = discord.Embed(
+                    title="✉️ Balasan untuk Admin",
+                    description=self.respon.value,
+                    color=discord.Color.green()
+                )
+                embed_reply.set_footer(text=f"Dikirim oleh {interaction.user.display_name}")
+                await interaction.response.send_message(embed=embed_reply, ephemeral=True)
+
+        class ForwardView(ui.View):
+            @ui.button(label="✉️ Balas", style=ButtonStyle.primary)
+            async def balas(self, interaction: discord.Interaction, button: ui.Button):
+                await interaction.response.send_modal(BalasanModal())
+
+            @ui.button(label="👍 Setuju", style=ButtonStyle.success)
+            async def setuju(self, interaction: discord.Interaction, button: ui.Button):
+                await interaction.response.send_message("✅ Terima kasih atas responmu!", ephemeral=True)
+
+            @ui.button(label="❌ Tidak Setuju", style=ButtonStyle.danger)
+            async def tidak_setuju(self, interaction: discord.Interaction, button: ui.Button):
+                await interaction.response.send_message("⚠️ Opini kamu sudah dicatat!", ephemeral=True)
+
+        target_channel = target_channel = bot.get_channel(FORWARD_CHANNEL_ID)
+        if target_channel and target_channel != ctx.channel:
+            await target_channel.send(embed=embed, view=ForwardView())
+            await ctx.send(f"✅ Pesan berhasil diteruskan ke <#{FORWARD_CHANNEL_ID}>.")
+        else:
+            await ctx.send(embed=embed, view=ForwardView())
