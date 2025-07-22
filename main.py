@@ -47,20 +47,29 @@ async def check_community():
     channel = bot.get_channel(CHANNEL_ID)
     for post in new_posts:
         if post["id"] not in sent_post_ids:
+            post_link = f"https://www.youtube.com/post/{post['id']}"
+
+            # Kirim pesan teks dulu
+            if channel:
+                await channel.send(f"Link Postingan: {post_link}")
+
+            # Kirim embed seperti pada gambar
             embed = discord.Embed(
                 title="Post Komunitas Baru",
                 url=post["url"],
-                description=f"📝 {post['text'] or '(Tanpa teks)'}\n📅 {post['timestamp']}",
+                description=(
+                    f"{post['text'] or '(Tanpa teks)'}\n\n"
+                    f"🗓️ {post['timestamp']}"
+                ),
                 color=discord.Color.blue()
             )
             embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-            embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
+            embed.set_footer(text="Notifikasi komunitas oleh My Waifu🥰")
 
             if channel:
                 await channel.send(embed=embed)
-            sent_post_ids.append(post["id"])
 
-    save_sent_post_ids(sent_post_ids)
+            sent_post_ids.append(post["id"])
 
 # 🔁 Loop Video Otomatis (RSS)
 @tasks.loop(seconds=60)
@@ -83,7 +92,7 @@ async def check_video():
             )
             embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
             embed.set_image(url=f"https://img.youtube.com/vi/{video['id']}/hqdefault.jpg")
-            embed.set_footer(text="Notifikasi video oleh Waifu-chan❤️")
+            embed.set_footer(text="Notifikasi video oleh My Waifu🥰")
 
             if channel:
                 await channel.send(embed=embed)
@@ -111,7 +120,7 @@ async def cekpost(ctx):
             color=discord.Color.blue()
         )
         embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-        embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
+        embed.set_footer(text="Notifikasi komunitas oleh My Waifu🥰")
 
         await ctx.send(embed=embed)
 
