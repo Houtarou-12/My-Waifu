@@ -178,6 +178,47 @@ async def cekvideo(ctx):
     except Exception as e:
         print(f"[ERROR] Gagal jalankan ~cekvideo: {e}")
         await ctx.send(f"❌ Terjadi error saat cek video: {e}")
+        
+#Menggunakan Semua Command Waifu-chan❤️
+@bot.command(name="waifuhelp")
+async def waifuhelp(ctx):
+    embed = discord.Embed(
+        title="📖 Bantuan Waifu-chan",
+        description="Gunakan prefix `~` untuk memanggil command.",
+        color=discord.Color.purple()
+    )
+
+    embed.add_field(
+        name="📺 Video & Komunitas",
+        value=(
+            "**~cekvideo** – Cek video terbaru Muse Indonesia dari RSS\n"
+            "**~cekpost** – Cek post komunitas terbaru\n"
+            "🔁 Otomatis notifikasi setiap 30–60 detik"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="✉️ Admin Tools",
+        value=(
+            "**~forward #channel <pesan>** – Kirim embed admin ke channel tertentu\n"
+            "┗ Tombol: ✉️ Balas, 👍 Setuju, ❌ Tidak Setuju\n"
+            "┗ Modal interaktif + auto delete command"
+        ),
+        inline=False
+    )
+
+    embed.add_field(
+        name="📜 Info Bot",
+        value=(
+            "**~peraturan** – Tampilkan peraturan server\n"
+            "**~botinfo** – Info bot & daftar command aktif"
+        ),
+        inline=False
+    )
+
+    embed.set_footer(text="Waifu-chan siap bantu ✨")
+    await ctx.send(embed=embed)
 
 # 🔌 Bot Siap Jalan
 @bot.event
