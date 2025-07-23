@@ -24,41 +24,38 @@ def setup_botinfo_commands(bot):
     @bot.command(name="waifuhelp")
     async def waifuhelp(ctx):
         embed = discord.Embed(
-            title="📖 Bantuan Waifu-chan",
-            description="Berikut adalah daftar command yang tersedia.\nGunakan prefix `~` untuk memanggil perintah.",
+            title="📖 Daftar Perintah Waifu-chan",
+            description="Gunakan prefix `~` saat memanggil command.\nCommand dibagi ke Umum & Admin.",
             color=discord.Color.purple()
         )
 
-        # 📌 Umum
         embed.add_field(
             name="📌 Command Umum",
             value=(
                 "`~ping` — Cek status bot\n"
                 "`~waifuhelp` — Lihat daftar perintah\n"
-                "`~botinfo` — Info bot dan daftar command aktif\n"
+                "`~botinfo` — Info bot & sistem\n"
                 "`~peraturan` — Tampilkan semua peraturan\n"
-                "`~cekvideo` — Cek video terbaru Muse Indonesia\n"
-                "`~cekpost` — Cek post komunitas terbaru"
+                "`~cekvideo` — Cek video terbaru\n"
+                "`~cekpost` — Cek post komunitas"
             ),
             inline=False
         )
 
-        # 🔧 Admin & Owner
         embed.add_field(
             name="🔧 Command Admin & Owner",
             value=(
-                "`~forward #channel <pesan>` — Kirim embed admin ke channel tertentu\n"
-                "`~to <pesan>` — Kirim pesan anonim ke channel aktif\n"
-                "`~vkick @user` — Keluarkan user dari voice channel\n"
+                "`~forward #channel <pesan>` — Kirim embed admin\n"
+                "`~to <pesan> #channel` — Kirim pesan anonim\n"
                 "`~kickout @user` — Kick user dari server\n"
-                "`~clear` / `~confirmclear` — Bersihkan semua peraturan\n"
-                "`~tambahperaturan` / `~editperaturan` / `~hapusperaturan` — Kelola peraturan\n"
-                "`~resetperaturan` — Reset seluruh daftar peraturan\n"
+                "`~vkick @user` — Keluarkan dari voice\n"
+                "`~tambahperaturan` / `~hapusperaturan` / `~editperaturan` — Kelola peraturan\n"
+                "`~resetperaturan` / `~clear` / `~confirmclear` — Bersihkan peraturan\n"
                 "`~setchannel` — Atur channel utama notifikasi\n"
-                "`~cekpost_all` — Cek semua post komunitas tanpa filter"
+                "`~cekpost_all` — Cek semua post komunitas"
             ),
             inline=False
         )
 
-        embed.set_footer(text="Waifu-chan siap jadi teman komunitasmu yang cerewet tapi berguna 💬💕")
+        embed.set_footer(text="Waifu-chan siap jadi teman komunitasmu ✨")
         await ctx.send(embed=embed)
