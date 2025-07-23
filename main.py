@@ -64,7 +64,7 @@ async def check_community():
                 color=discord.Color.blue()
             )
             embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-            embed.set_footer(text="Notifikasi komunitas oleh My Waifu🥰")
+            embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
 
             if channel:
                 await channel.send(embed=embed)
@@ -94,7 +94,7 @@ async def check_video():
             )
             embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
             embed.set_image(url=f"https://img.youtube.com/vi/{video['id']}/hqdefault.jpg")
-            embed.set_footer(text="Notifikasi video oleh My Waifu🥰")
+            embed.set_footer(text="Notifikasi video oleh Waifu-chan❤️")
 
             if channel:
                 await channel.send(embed=embed)
@@ -122,7 +122,7 @@ async def cekpost(ctx):
             color=discord.Color.blue()
         )
         embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-        embed.set_footer(text="Notifikasi komunitas oleh My Waifu🥰")
+        embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
 
         await ctx.send(embed=embed)
 
