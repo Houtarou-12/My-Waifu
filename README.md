@@ -82,4 +82,4 @@ Waifu-chan dikembangkan secara pribadi dan belum dirilis untuk publik. Proyek in
 
 ---
 #### Fun fact
-Bot ini dibuat dengan bantuan [AI](https://copilot.github.com/) :smile:
+Bot ini dibuat dengan bantuan, bahkan bisa dibilang ini full buatan [AI](https://copilot.github.com/) :smile:
