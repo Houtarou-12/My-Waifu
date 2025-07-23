@@ -46,19 +46,26 @@ def setup_general_commands(bot):
 
         try:
             await member.kick(reason=alasan)
-            await ctx.send(f"👢 {member.display_name} telah dikeluarkan dari server. Alasan: {alasan}")
+            await ctx.send(f"👢 {member.display_name} telah dikeluarkan dari server.\n📝 Alasan: {alasan}")
+        except discord.Forbidden:
+            await ctx.send("❌ Bot tidak memiliki izin kick.")
         except Exception as e:
-            await ctx.send(f"⚠️ Gagal kick: {e}")
+            await ctx.send(f"⚠️ Error: {e}")
 
     @bot.command(name="vkick")
     @commands.has_permissions(move_members=True)
     async def vkick(ctx, member: discord.Member = None):
-        if not member or not member.voice:
-            await ctx.send("❌ User tidak sedang berada di voice channel.")
+        if not member:
+            await ctx.send("❌ Format: `~vkick @user`")
+            return
+        if not member.voice:
+            await ctx.send("❌ User tidak berada di voice channel.")
             return
 
         try:
             await member.move_to(None)
             await ctx.send(f"🔊 {member.display_name} telah dikeluarkan dari voice channel.")
+        except discord.Forbidden:
+            await ctx.send("❌ Bot tidak memiliki izin move member.")
         except Exception as e:
-            await ctx.send(f"⚠️ Gagal mengeluarkan: {e}")
+            await ctx.send(f"⚠️ Gagal memindahkan: {e}")
