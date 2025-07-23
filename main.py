@@ -1,123 +1,53 @@
 import os
-import json
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
-from commands.general_command import setup_general_commands
-setup_general_commands(bot)
 from datetime import datetime
-start_time = datetime.utcnow()
 
-from commands.peraturan import setup_peraturan_commands
-from commands.admin_owner import setup_admin_owner_commands
-from commands.botinfo import setup_botinfo_commands
-from utils.scraper import (
-    get_latest_posts,
-    get_latest_rss_videos,
-    load_sent_post_ids, save_sent_post_ids,
-    load_sent_video_ids, save_sent_video_ids
-)
-
-# 🔧 Load konfigurasi
+# 🔧 Inisialisasi
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 VIDEO_CHANNEL_ID = int(os.getenv("VIDEO_CHANNEL_ID", "0"))
 YT_CHANNEL_URL = os.getenv("YT_COMMUNITY_URL", "https://www.youtube.com/@MuseIndonesia")
+start_time = datetime.utcnow()
 
-if CHANNEL_ID == 0 or VIDEO_CHANNEL_ID == 0:
-    print("[WARN] Channel ID belum dikonfigurasi di .env!")
-
-# 🔌 Setup Bot
+# 🔌 Setup Intents & Bot
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True  # penting untuk kick/move
 bot = commands.Bot(command_prefix="~", intents=intents)
 
-# 🔧 Setup Commands
+# 🧩 Import Setup Command Modular
+from commands.peraturan import setup_peraturan_commands
+from commands.admin_owner import setup_admin_owner_commands
+from commands.botinfo import setup_botinfo_commands
+from commands.general_command import setup_general_commands
+from utils.scraper import (
+    get_latest_posts, get_latest_rss_videos,
+    load_sent_post_ids, save_sent_post_ids,
+    load_sent_video_ids, save_sent_video_ids
+)
+
+# 🧠 Daftarkan Semua Command
 setup_peraturan_commands(bot)
 setup_admin_owner_commands(bot, CHANNEL_ID, CHANNEL_ID, YT_CHANNEL_URL, [])
 setup_botinfo_commands(bot)
+setup_general_commands(bot)
 
-# 🔁 Loop Komunitas Otomatis
-@tasks.loop(seconds=60)
+# 🔁 Loop Komunitas
+@tasks.loop(seconds=30)
 async def check_community():
     sent_post_ids = load_sent_post_ids()
     new_posts = get_latest_posts(YT_CHANNEL_URL, max_posts=5)
-
-    if not new_posts:
-        print("[INFO] Tidak ada post valid.")
-        return
-
     channel = bot.get_channel(CHANNEL_ID)
-    for post in new_posts:
-        if post["id"] not in sent_post_ids:
-            post_link = f"https://www.youtube.com/post/{post['id']}"
 
-            # Kirim pesan teks dulu
-            if channel:
-                await channel.send(f"Link Postingan: {post_link}")
-
-            # Kirim embed seperti pada gambar
-            embed = discord.Embed(
-                title="Post Komunitas Baru",
-                url=post["url"],
-                description=(
-                    f"{post['text'] or '(Tanpa teks)'}\n\n"
-                    f"🗓️ {post['timestamp']}"
-                ),
-                color=discord.Color.blue()
-            )
-            embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-            embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
-
-            if channel:
-                await channel.send(embed=embed)
-            sent_post_ids.append(post["id"])
-
-    save_sent_post_ids(sent_post_ids)
-
-
-# 🔁 Loop Video Otomatis (RSS)
-@tasks.loop(seconds=60)
-async def check_video():
-    sent_video_ids = load_sent_video_ids()
-    new_videos = get_latest_rss_videos()
-
-    if not new_videos:
-        print("[INFO] Tidak ada video RSS valid.")
+    if not new_posts or not channel:
         return
 
-    channel = bot.get_channel(VIDEO_CHANNEL_ID)
-    for video in new_videos:
-        if video["id"] not in sent_video_ids:
-            embed = discord.Embed(
-                title=video["title"],
-                url=video["url"],
-                description=f"📅 {video['published']}",
-                color=discord.Color.red()
-            )
-            embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
-            embed.set_image(url=f"https://img.youtube.com/vi/{video['id']}/hqdefault.jpg")
-            embed.set_footer(text="Notifikasi video oleh Waifu-chan❤️")
-
-            if channel:
-                await channel.send(embed=embed)
-            sent_video_ids.append(video["id"])
-
-    save_sent_video_ids(sent_video_ids)
-
-# 🔧 Command Manual Cek Post
-@bot.command()
-async def cekpost(ctx):
-    try:
-        await ctx.send("🔍 Mengecek post komunitas terbaru...")
-
-        posts = get_latest_posts(YT_CHANNEL_URL, max_posts=1)
-        post = posts[0] if posts else None
-
-        if not post:
-            await ctx.send("❌ Tidak ditemukan post komunitas yang valid.")
-            return
+    for post in new_posts:
+        if post["id"] in sent_post_ids:
+            continue
 
         embed = discord.Embed(
             title="Post Komunitas Baru",
@@ -128,33 +58,24 @@ async def cekpost(ctx):
         embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
         embed.set_footer(text="Notifikasi komunitas oleh Waifu-chan❤️")
 
-        await ctx.send(embed=embed)
+        await channel.send(embed=embed)
+        sent_post_ids.append(post["id"])
 
-        sent_post_ids = load_sent_post_ids()
-        if post["id"] not in sent_post_ids:
-            sent_post_ids.append(post["id"])
-            save_sent_post_ids(sent_post_ids)
+    save_sent_post_ids(sent_post_ids)
 
-            notif_channel = bot.get_channel(CHANNEL_ID)
-            if notif_channel and notif_channel != ctx.channel:
-                await notif_channel.send(embed=embed)
+# 🔁 Loop Video Otomatis
+@tasks.loop(seconds=30)
+async def check_video():
+    sent_video_ids = load_sent_video_ids()
+    new_videos = get_latest_rss_videos()
+    channel = bot.get_channel(VIDEO_CHANNEL_ID)
 
-    except Exception as e:
-        print(f"[ERROR] Gagal jalankan !~cekpost: {e}")
-        await ctx.send(f"❌ Terjadi error saat cek post: {e}")
+    if not new_videos or not channel:
+        return
 
-# 🔧 Command Manual Cek Video RSS
-@bot.command(name="cekvideo")
-async def cekvideo(ctx):
-    try:
-        await ctx.send("📺 Mengecek video terbaru di Muse Indonesia...")
-
-        videos = get_latest_rss_videos(include_sent=True)  # 🔧 Ambil video meskipun sudah pernah dikirim
-        video = videos[0] if videos else None
-
-        if not video:
-            await ctx.send("❌ Tidak ditemukan video terbaru.")
-            return
+    for video in new_videos:
+        if video["id"] in sent_video_ids:
+            continue
 
         embed = discord.Embed(
             title=video["title"],
@@ -166,24 +87,21 @@ async def cekvideo(ctx):
         embed.set_image(url=f"https://img.youtube.com/vi/{video['id']}/hqdefault.jpg")
         embed.set_footer(text="Notifikasi video oleh Waifu-chan❤️")
 
-        # ✅ Selalu kirim ke channel command manual
-        await ctx.send(embed=embed)
+        await channel.send(embed=embed)
+        sent_video_ids.append(video["id"])
 
-        # 🔔 Kirim ke channel utama hanya jika belum pernah dikirim
-        sent_ids = load_sent_video_ids()
-        if video["id"] not in sent_ids:
-            sent_ids.append(video["id"])
-            save_sent_video_ids(sent_ids)
+    save_sent_video_ids(sent_video_ids)
 
-            notif_channel = bot.get_channel(VIDEO_CHANNEL_ID)
-            if notif_channel and notif_channel != ctx.channel:
-                await notif_channel.send(embed=embed)
+# 🕒 Tunggu Bot Siap Sebelum Mulai Loop
+@check_community.before_loop
+async def before_community():
+    await bot.wait_until_ready()
 
-    except Exception as e:
-        print(f"[ERROR] Gagal jalankan ~cekvideo: {e}")
-        await ctx.send(f"❌ Terjadi error saat cek video: {e}")
+@check_video.before_loop
+async def before_video():
+    await bot.wait_until_ready()
 
-# 🔌 Bot Siap Jalan
+# 🚀 Bot Siap Jalan
 @bot.event
 async def on_ready():
     print(f"✅ Logged in as {bot.user}")
@@ -191,5 +109,5 @@ async def on_ready():
     check_community.start()
     check_video.start()
 
-# 🚀 Jalankan Bot
+# 🧠 Jalankan Bot
 bot.run(TOKEN)
