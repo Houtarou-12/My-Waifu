@@ -3,6 +3,8 @@ import json
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
+from commands.general_command import setup_general_commands
+setup_general_commands(bot)
 
 from commands.peraturan import setup_peraturan_commands
 from commands.admin_owner import setup_admin_owner_commands
