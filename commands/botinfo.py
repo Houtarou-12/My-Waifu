@@ -3,24 +3,22 @@ import discord
 
 def setup_botinfo_commands(bot):
 
-    @bot.command()
-    async def ping(ctx):
-        await ctx.send(f"Pong! 🏓 `{round(bot.latency * 1000)}ms`")
-
-    #Menggunakan Semua Command Waifu-chan❤️
     @bot.command(name="botinfo")
     async def botinfo(ctx):
+        import platform
+        uptime = datetime.utcnow() - start_time
+
         embed = discord.Embed(
-            title="🤖 Info Bot Waifu-chan",
-            description="Bot anime-themed untuk komunitas dan interaksi.",
+            title="🤖 Info Waifu-chan",
+            description="Bot anime-themed untuk notifikasi & interaksi server.",
             color=discord.Color.pink()
         )
         embed.add_field(name="🆔 Bot ID", value=str(bot.user.id))
         embed.add_field(name="📛 Nama", value=bot.user.name)
-        embed.add_field(name="🧠 Jumlah Command", value=str(len(bot.commands)))
-        embed.add_field(name="⚙️ Python", value=platform.python_version(), inline=True)
-        embed.set_footer(text="Waifu-chan ❤️")
-
+        embed.add_field(name="⏱️ Uptime", value=str(uptime).split('.')[0])
+        embed.add_field(name="⚙️ Python", value=platform.python_version())
+        embed.add_field(name="🖥️ Sistem", value=platform.system())
+        embed.set_footer(text="Waifu-chan ❤️ aktif & setia di servermu")
         await ctx.send(embed=embed)
 
     @bot.command(name="waifuhelp")
