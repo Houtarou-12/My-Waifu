@@ -7,28 +7,29 @@ def setup_general_commands(bot):
     @commands.has_permissions(administrator=True)
     async def to(ctx, *, arg: str = None):
         if not arg:
-            await ctx.send("❌ Format: `~to <isi pesan> #channel`")
+            await ctx.send("❌ Format: `~to <isi pesan> #channel>`")
             return
 
-        # Pisahkan isi pesan dan mention channel
-        parts = arg.rsplit("#", 1)
-        if len(parts) != 2 or not parts[1].strip():
-            await ctx.send("❌ Sertakan mention channel di akhir pesan, contoh: `#umum`")
+        # Pisah isi pesan dan mention channel
+        if "<#" in arg and ">" in arg:
+            try:
+                isi, mention = arg.rsplit("<#", 1)
+                channel_id = int(mention.replace(">", "").strip())
+                target_channel = bot.get_channel(channel_id)
+            except ValueError:
+                await ctx.send("❌ Channel tidak valid.")
+                return
+        else:
+            await ctx.send("❌ Sertakan channel dengan mention, contoh: `#umum`")
             return
 
-        isi_pesan = parts[0].strip()
-        channel_name = parts[1].strip()
-
-        # Cari channel berdasarkan nama
-        target_channel = discord.utils.get(ctx.guild.text_channels, name=channel_name)
-        if not target_channel:
-            await ctx.send(f"❌ Channel `#{channel_name}` tidak ditemukan.")
+        if not target_channel or not isinstance(target_channel, discord.TextChannel):
+            await ctx.send("❌ Channel tidak ditemukan.")
             return
 
-        # Kirim embed anonim
         embed = discord.Embed(
             title="📩 Pesan Anonim",
-            description=isi_pesan,
+            description=isi.strip(),
             color=discord.Color.blurple()
         )
         embed.set_footer(text="Dikirim oleh Waifu-chan (anonim)")
