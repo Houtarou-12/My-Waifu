@@ -27,7 +27,7 @@ if CHANNEL_ID == 0 or VIDEO_CHANNEL_ID == 0:
 # 🔌 Setup Bot
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="w/", intents=intents)
+bot = commands.Bot(command_prefix="~", intents=intents)
 
 # 🔧 Setup Commands
 setup_peraturan_commands(bot)
