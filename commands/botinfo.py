@@ -7,24 +7,46 @@ def setup_botinfo_commands(bot):
     async def ping(ctx):
         await ctx.send(f"Pong! 🏓 `{round(bot.latency * 1000)}ms`")
 
+    #Menggunakan Semua Command Waifu-chan❤️
     @bot.command(name="waifuhelp")
     async def waifuhelp(ctx):
         embed = discord.Embed(
             title="📖 Bantuan Waifu-chan",
-            description="Berikut adalah fitur-fitur yang tersedia. Gunakan prefix `~` saat memanggil command.",
+            description="Gunakan prefix `~` untuk memanggil command.",
             color=discord.Color.purple()
         )
 
-        # 📺 Video & Komunitas
         embed.add_field(
             name="📺 Video & Komunitas",
             value=(
                 "**~cekvideo** – Cek video terbaru Muse Indonesia dari RSS\n"
-                "**~cekpost** – Cek post komunitas terbaru dari channel\n"
-                "🔁 Loop otomatis setiap 30–60 detik untuk video & post baru"
+                "**~cekpost** – Cek post komunitas terbaru\n"
+                "🔁 Otomatis notifikasi setiap 30–60 detik"
             ),
             inline=False
         )
+
+        embed.add_field(
+            name="✉️ Admin Tools",
+            value=(
+                "**~forward #channel <pesan>** – Kirim embed admin ke channel tertentu\n"
+                "┗ Tombol: ✉️ Balas, 👍 Setuju, ❌ Tidak Setuju\n"
+                "┗ Modal interaktif + auto delete command"
+            ),
+            inline=False
+        )
+
+        embed.add_field(
+            name="📜 Info Bot",
+            value=(
+                "**~peraturan** – Tampilkan peraturan server\n"
+                "**~botinfo** – Info bot & daftar command aktif"
+            ),
+            inline=False
+        )
+
+        embed.set_footer(text="Waifu-chan siap bantu ✨")
+        await ctx.send(embed=embed)
 
         # ✉️ Admin & Pesan
         embed.add_field(
