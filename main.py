@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from datetime import datetime
+import pytz
 
 # 🔧 Inisialisasi
 load_dotenv()
@@ -77,10 +78,21 @@ async def check_video():
         if video["id"] in sent_video_ids:
             continue
 
+        # Parsing waktu dari RSS (UTC format)
+        published_dt = datetime.strptime(video["published"], "%Y-%m-%dT%H:%M:%S%z")
+
+        # Konversi ke zona waktu WIB
+        local_tz = pytz.timezone("Asia/Jakarta")
+        published_local = published_dt.astimezone(local_tz)
+
+        # Format tanggal dan jam
+        tanggal = published_local.strftime("%d %B %Y")  # Contoh: 27 Juli 2025
+        jam = published_local.strftime("%H:%M:%S")      # Contoh: 10:45:12
+
         embed = discord.Embed(
             title=video["title"],
             url=video["url"],
-            description=f"📅 {video['published']}",
+            description=f"📅 {tanggal}\n⏰ {jam} WIB",
             color=discord.Color.red()
         )
         embed.set_author(name="Muse Indonesia", url=YT_CHANNEL_URL)
