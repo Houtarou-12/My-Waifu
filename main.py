@@ -1,64 +1,59 @@
-from discord.ext import commands
+# main.py
+
 import discord
+from discord.ext import commands
+import requests
 from datetime import datetime
-start_time = datetime.utcnow()
+import pytz
+import json
 
+intents = discord.Intents.default()
+intents.message_content = True
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-def setup_botinfo_commands(bot):
+def convert_to_wib(utc_time_str):
+    try:
+        utc_dt = datetime.strptime(utc_time_str, "%Y-%m-%dT%H:%M:%SZ")
+        utc_dt = pytz.utc.localize(utc_dt)
+        wib_tz = pytz.timezone("Asia/Jakarta")
+        wib_dt = utc_dt.astimezone(wib_tz)
+        return wib_dt.strftime("%d %B %Y • %H:%M WIB")
+    except Exception as e:
+        print("Gagal konversi waktu:", e)
+        return "Waktu tidak tersedia"
 
-    @bot.command(name="botinfo")
-    async def botinfo(ctx):
-        import platform
-        uptime = datetime.utcnow() - start_time
+def get_valid_thumbnail(url):
+    try:
+        res = requests.get(url)
+        if res.status_code == 200 and "image" in res.headers.get("content-type", ""):
+            return url
+        else:
+            return "https://i.imgur.com/placeholder.png"
+    except:
+        return "https://i.imgur.com/placeholder.png"
 
-        embed = discord.Embed(
-            title="🤖 Info Waifu-chan",
-            description="Bot anime-themed untuk notifikasi & interaksi server.",
-            color=discord.Color.pink()
-        )
-        embed.add_field(name="🆔 Bot ID", value=str(bot.user.id))
-        embed.add_field(name="📛 Nama", value=bot.user.name)
-        embed.add_field(name="⏱️ Uptime", value=str(uptime).split('.')[0])
-        embed.add_field(name="⚙️ Python", value=platform.python_version())
-        embed.add_field(name="🖥️ Sistem", value=platform.system())
-        embed.set_footer(text="Waifu-chan ❤️ aktif & setia di servermu")
-        await ctx.send(embed=embed)
+@bot.command()
+async def notify(ctx):
+    try:
+        with open("data.json", "r", encoding="utf-8") as f:
+            video_data = json.load(f)
+    except Exception as e:
+        await ctx.send("Gagal membaca data video.")
+        print("Error:", e)
+        return
 
-    @bot.command(name="waifuhelp")
-    async def waifuhelp(ctx):
-        embed = discord.Embed(
-            title="📖 Daftar Perintah Waifu-chan",
-            description="Gunakan prefix `~` saat memanggil command.\nCommand dibagi ke Umum & Admin.",
-            color=discord.Color.purple()
-        )
+    formatted_time = convert_to_wib(video_data.get("publishedAt", ""))
+    thumbnail_url = get_valid_thumbnail(video_data.get("thumbnail", ""))
 
-        embed.add_field(
-            name="📌 Command Umum",
-            value=(
-                "`~ping` — Cek status bot\n"
-                "`~waifuhelp` — Lihat daftar perintah\n"
-                "`~botinfo` — Info bot & sistem\n"
-                "`~peraturan` — Tampilkan semua peraturan\n"
-                "`~cekvideo` — Cek video terbaru\n"
-                "`~cekpost` — Cek post komunitas"
-            ),
-            inline=False
-        )
+    embed = discord.Embed(
+        title=video_data.get("title", "Judul tidak tersedia"),
+        url=video_data.get("link", ""),
+        description=f"📺 Channel: {video_data.get('channel', 'Tidak diketahui')}\n🕒 {formatted_time}",
+        color=discord.Color.purple()
+    )
+    embed.set_image(url=thumbnail_url)
+    embed.set_footer(text="Notifikasi Waifu-chan")
 
-        embed.add_field(
-            name="🔧 Command Admin & Owner",
-            value=(
-                "`~forward #channel <pesan>` — Kirim embed admin\n"
-                "`~to <pesan> #channel` — Kirim pesan anonim\n"
-                "`~kickout @user` — Kick user dari server\n"
-                "`~vkick @user` — Keluarkan dari voice\n"
-                "`~tambahperaturan` / `~hapusperaturan` / `~editperaturan` — Kelola peraturan\n"
-                "`~resetperaturan` / `~clear` / `~confirmclear` — Bersihkan peraturan\n"
-                "`~setchannel` — Atur channel utama notifikasi\n"
-                "`~cekpost_all` — Cek semua post komunitas"
-            ),
-            inline=False
-        )
+    await ctx.send(embed=embed)
 
-        embed.set_footer(text="Waifu-chan siap jadi teman komunitasmu ✨")
-        await ctx.send(embed=embed)
+bot.run("your_bot_token")
