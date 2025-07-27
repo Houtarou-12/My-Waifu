@@ -73,31 +73,15 @@ def get_latest_posts(channel_url, max_posts=5):
                         post_id = post_data.get("postId")
                         if not post_id or not post_id.startswith("Ugk"):
                             continue
-
                         text_runs = post_data.get("contentText", {}).get("runs", [])
                         text = "".join(run.get("text", "") for run in text_runs).strip()
                         timestamp = post_data.get("publishedTimeText", {}).get("runs", [{}])[0].get("text", "")
-
-                        # 🔍 Cek apakah ada attachment gambar
-                        thumbnail_url = None
-                        try:
-                            thumbnails = post_data.get("backstageAttachment", {})\
-                                .get("imageAttachmentRenderer", {})\
-                                .get("image", {})\
-                                .get("thumbnails", [])
-                            if thumbnails:
-                                thumbnail_url = thumbnails[-1].get("url")
-                        except Exception as e:
-                            print(f"[WARNING] Thumbnail parsing error: {e}")
-
                         results.append({
                             "id": post_id,
                             "url": f"https://www.youtube.com/post/{post_id}",
                             "text": text,
-                            "timestamp": timestamp,
-                            "thumbnail": thumbnail_url  # ✅ Preview gambar di sini
+                            "timestamp": timestamp
                         })
-
                         if len(results) >= max_posts:
                             return results
                     except KeyError:
