@@ -1,5 +1,8 @@
 from discord.ext import commands
 import discord
+from datetime import datetime
+start_time = datetime.utcnow()
+
 
 def setup_botinfo_commands(bot):
 
